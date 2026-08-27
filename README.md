@@ -1,4 +1,4 @@
 # Smart-Steering-Car project
 components : ArduinoUNO , L298N Driver , 2 ULTRAsonic sensors , Servo motor , two motors , two potentiometers
 
-tinkercad linkk : https://www.tinkercad.com/things/eGJMpYYDuBI-copy-of-surprising-jaiks/editel?returnTo=https%3A%2F%2Fwww.tinkercad.com%2Fdashboard
+tinkercad linkk : https://www.tinkercad.com/things/lkNFYMO2Fw9-martinnn-final-steering-car?sharecode=eKNPkrG-7DpUVj-WDK0rt8aDHa1EXqgV8EGHZmQ-iPM
