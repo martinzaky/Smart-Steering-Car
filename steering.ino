@@ -1,4 +1,6 @@
 #include<Servo.h>
+#include<LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27,16,2);
 int motor1pin1 = 13;
 int motor1pin2 = 7;
 int motor1speed = 9; //PWM
@@ -21,7 +23,10 @@ int printingbutton = A3;
 int buttonvalue = 0;
 String status ;
 void setup() {
-  // put your setup code here, to run once:
+
+lcd.init();
+lcd.clear();
+lcd.backlight();
 servo.attach(servopin);
 pinMode(motor1pin1,OUTPUT);
 pinMode(motor1pin2,OUTPUT);
@@ -70,13 +75,32 @@ void loop() {
 // vehicle speed calculation by m/s
 float wheelradius =0.0345;
 float vehiclespeed= 2 * 3.14159 * wheelradius * (RPM / 60.0); // will be displayed
-
+//making RPM and speed equals zero if the car is stopped
+if(status=="stopped"){
+  RPM =0;
+  vehiclespeed=0;
+}
 // displaying motor status & speed & rpm
 buttonvalue=analogRead(printingbutton);
-if(buttonvalue>512){
+if(buttonvalue<512){
 Serial.println(status);
 Serial.println(vehiclespeed);
 Serial.println(RPM);
+
+// lcd printinggg
+lcd.setCursor(0,0);
+lcd.print(status);
+lcd.setCursor(0,1);
+lcd.print("speed = ");
+lcd.print(vehiclespeed);
+lcd.print("m/s");
+delay(3000);
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print("rpm = ");
+lcd.print(RPM);
+delay(3000);
+lcd.clear();
 }
 }
 
@@ -119,7 +143,6 @@ long duration= pulseIn(echo,HIGH);
 float distance= (duration * 0.0343)/2;
 return distance;
 }
-
 // button changing direction
 void ISR_changedirection(){
 static long lastTime=0;
