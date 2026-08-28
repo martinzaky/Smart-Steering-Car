@@ -56,8 +56,8 @@ void loop() {
   int RPM = map(pot2Value,0,1023,0,600); // will be displayed
 
 //ultrasonic reading and failsafe
-  distanceR=calc(trigR,echoR);
-  distanceL=calc(trigL,echoL);
+  distanceR=ultra(trigR,echoR);
+  distanceL=ultra(trigL,echoL);
   bool nearbydanger =(distanceR<=20 || distanceL<=20);
   if (nearbydanger){
   stop();
@@ -133,7 +133,7 @@ void stop(){
   digitalWrite(motor2pin1,LOW);
   digitalWrite(motor2pin2,LOW);
 }
-float calc(int trig , int echo){
+float ultra(int trig , int echo){
   digitalWrite(trig,LOW);
   delayMicroseconds(2);
   digitalWrite(trig,HIGH);
