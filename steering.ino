@@ -18,7 +18,7 @@ int echoL = 3;
 int buttonpin = 2; //must be pin 2 or 3
 float distanceR;
 float distanceL;
-volatile bool direction = true;
+volatile bool forward = true;
 int printingbutton = A3;
 int buttonvalue = 0;
 String status ;
@@ -46,26 +46,30 @@ Serial.begin(9600);
 void loop() {
 
 //steering potentiometer
-  int potValue = analogRead(potsteer);
-  int angle = map(potValue,0,1023,0,180);
+  int steering = analogRead(potsteer);
+  int angle = map(steering,0,1023,0,180);
   servo.write(angle);
 
 //speed potentiometer
-  int pot2Value = analogRead(potspeed);
-  int PWM = map(pot2Value,0,1023,0,255);
-  int RPM = map(pot2Value,0,1023,0,600); // will be displayed
+  int speed = analogRead(potspeed);
+  int PWM = map(speed,0,1023,0,255);
+  int RPM = map(speed,0,1023,0,600); // will be displayed
 
 //ultrasonic reading and failsafe
   distanceR=ultra(trigR,echoR);
   distanceL=ultra(trigL,echoL);
   bool nearbydanger =(distanceR<=20 || distanceL<=20);
   if (nearbydanger){
-  stop();
+  stop(PWM);
+  delay(500);
+  movebackward(PWM);
+  delay(500);
+  moveforward(PWM);
   status = "stopped";
 } else {
-  if(direction){
-  moveforward(PWM);
-  status = "forward";
+    if(forward){
+    moveforward(PWM);
+    status = "forward";
 } else {
   movebackward(PWM);
   status = "backward";
@@ -73,7 +77,7 @@ void loop() {
 }
 
 // vehicle speed calculation by m/s
-float wheelradius =0.0345;
+float wheelradius =0.0325;
 float vehiclespeed= 2 * 3.14159 * wheelradius * (RPM / 60.0); // will be displayed
 //making RPM and speed equals zero if the car is stopped
 if(status=="stopped"){
@@ -85,7 +89,8 @@ buttonvalue=analogRead(printingbutton);
 if(buttonvalue<512){
 Serial.println(status);
 Serial.println(vehiclespeed);
-Serial.println(RPM);
+Serial.println(distanceR);
+Serial.println(distanceL);
 
 // lcd printinggg
 lcd.setCursor(0,0);
@@ -97,8 +102,13 @@ lcd.print("m/s");
 delay(3000);
 lcd.clear();
 lcd.setCursor(0,0);
-lcd.print("rpm = ");
-lcd.print(RPM);
+lcd.print("ultraR :");
+lcd.print(distanceR);
+lcd.print("cm");
+lcd.setCursor(0,1);
+lcd.print("ultraL :");
+lcd.print(distanceL);
+lcd.print("cm");
 delay(3000);
 lcd.clear();
 }
@@ -112,7 +122,7 @@ void moveforward(int PWM){
   for(int i=0;i<PWM;i+=5){
   analogWrite(motor1speed,i);
   analogWrite(motor2speed,i);
-  delay(5);
+  delay(20);
   }
 }
 
@@ -124,20 +134,25 @@ void movebackward(int PWM){
 for(int i=0;i<PWM;i+=5){
   analogWrite(motor1speed,i);
   analogWrite(motor2speed,i);
-  delay(5);
+  delay(20);
   }
 }
-void stop(){
-  digitalWrite(motor1pin1,LOW);
-  digitalWrite(motor1pin2,LOW);
-  digitalWrite(motor2pin1,LOW);
-  digitalWrite(motor2pin2,LOW);
+void stop(int PWM){
+  for(int i=PWM;i>0;i-=5){
+  analogWrite(motor1speed,i);
+  analogWrite(motor2speed,i);
+  delay(20);
+  }
+  digitalWrite(motor1pin1,HIGH);
+  digitalWrite(motor1pin2,HIGH);
+  digitalWrite(motor2pin1,HIGH);
+  digitalWrite(motor2pin2,HIGH);
 }
 float ultra(int trig , int echo){
   digitalWrite(trig,LOW);
   delayMicroseconds(2);
   digitalWrite(trig,HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(2);
   digitalWrite(trig,LOW);
 long duration= pulseIn(echo,HIGH);
 float distance= (duration * 0.0343)/2;
@@ -148,7 +163,7 @@ void ISR_changedirection(){
 static long lastTime=0;
 long currentTime=millis();
 if(currentTime - lastTime > 200){
-  direction=!direction;
+  forward=!forward;
 }
 lastTime = currentTime;
 }
